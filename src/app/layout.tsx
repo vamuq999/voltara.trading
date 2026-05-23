@@ -1,25 +1,27 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { TradeCoreProvider } from "@/context/TradeCoreContext";
-import Web3Provider from "@/components/providers/Web3Provider";
+import type { Metadata } from "next"
+import "./globals.css"
+
+import BottomNav from "@/components/layout/BottomNav"
 
 export const metadata: Metadata = {
   title: "Voltara Trading",
-  description: "Autonomous Multi-Agent Crypto Trading Infrastructure",
-};
+  description: "AI Multi-Agent Trading Infrastructure",
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
-      <body>
-        <Web3Provider>
-          <TradeCoreProvider>{children}</TradeCoreProvider>
-        </Web3Provider>
+      <body className="bg-black text-white">
+        <main className="min-h-screen pb-24">
+          {children}
+        </main>
+
+        <BottomNav />
       </body>
     </html>
-  );
+  )
 }
