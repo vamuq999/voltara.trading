@@ -1,63 +1,63 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import {
+  LayoutDashboard,
+  Bot,
+  Vault,
+  BarChart3,
+} from "lucide-react"
 
-const items = [
+const navItems = [
   {
-    label: "Dashboard",
     href: "/",
+    label: "Dashboard",
+    icon: LayoutDashboard,
   },
   {
-    label: "Bots",
     href: "/bots",
+    label: "Bots",
+    icon: Bot,
   },
   {
-    label: "Vault",
     href: "/vault",
+    label: "Vault",
+    icon: Vault,
   },
   {
-    label: "Analytics",
     href: "/analytics",
+    label: "Analytics",
+    icon: BarChart3,
   },
-];
+]
 
 export default function BottomNav() {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   return (
-    <nav className="nav-blur fixed bottom-0 left-0 z-50 w-full">
-      <div className="mx-auto grid max-w-2xl grid-cols-4 py-4">
-        {items.map((item) => {
-          const active = pathname === item.href;
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black/95 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-md items-center justify-around py-3">
+        {navItems.map((item) => {
+          const active = pathname === item.href
+          const Icon = item.icon
 
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center"
+              className={`flex flex-col items-center gap-1 text-xs transition ${
+                active
+                  ? "text-white"
+                  : "text-zinc-500"
+              }`}
             >
-              <span
-                className={`text-sm font-semibold transition-all ${
-                  active
-                    ? "text-white"
-                    : "text-zinc-500"
-                }`}
-              >
-                {item.label}
-              </span>
-
-              <div
-                className={`mt-2 h-[3px] rounded-full transition-all ${
-                  active
-                    ? "w-8 bg-blue-400"
-                    : "w-0 bg-transparent"
-                }`}
-              />
+              <Icon size={20} />
+              <span>{item.label}</span>
             </Link>
-          );
+          )
         })}
       </div>
-    </nav>
-  );
+    </div>
+  )
 }
