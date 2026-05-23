@@ -12,17 +12,32 @@ export type Bot = {
   capital: number;
 };
 
+export type PaperTrade = {
+  id: string;
+  bot: string;
+  symbol: string;
+  side: "BUY" | "SELL" | "HOLD";
+  price: number;
+  confidence: number;
+  thesis: string;
+  time: string;
+};
+
 type TradeCoreContextType = {
   vault: number;
   bots: Bot[];
+  trades: PaperTrade[];
   deployBot: () => void;
   toggleBot: (name: string) => void;
+  addPaperTrade: (trade: PaperTrade) => void;
 };
 
 const TradeCoreContext = createContext<TradeCoreContextType | null>(null);
 
 export function TradeCoreProvider({ children }: { children: ReactNode }) {
   const [vault, setVault] = useState(48221);
+
+  const [trades, setTrades] = useState<PaperTrade[]>([]);
 
   const [bots, setBots] = useState<Bot[]>([
     { name: "BTC TITAN", symbol: "BTC", active: true, pl: 18.4, trades: 1284, boost: 6, capital: 120 },
@@ -67,8 +82,39 @@ export function TradeCoreProvider({ children }: { children: ReactNode }) {
     setVault((prev) => prev - 250);
   }
 
+  function addPaperTrade(trade: PaperTrade) {
+    setTrades((prev) => [trade, ...prev].slice(0, 20));
+
+    setBots((prev) =>
+      prev.map((bot) =>
+        bot.symbol === trade.symbol
+          ? {
+              ...bot,
+              trades: bot.trades + 1,
+              boost: trade.confidence > 80 ? bot.boost + 1 : bot.boost,
+              pl:
+                trade.side === "BUY"
+                  ? Number((bot.pl + Math.random() * 0.4).toFixed(2))
+                  : trade.side === "SELL"
+                  ? Number((bot.pl + Math.random() * 0.25).toFixed(2))
+                  : bot.pl,
+            }
+          : bot
+      )
+    );
+  }
+
   return (
-    <TradeCoreContext.Provider value={{ vault, bots, deployBot, toggleBot }}>
+    <TradeCoreContext.Provider
+      value={{
+        vault,
+        bots,
+        trades,
+        deployBot,
+        toggleBot,
+        addPaperTrade,
+      }}
+    >
       {children}
     </TradeCoreContext.Provider>
   );
