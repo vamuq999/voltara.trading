@@ -6,30 +6,26 @@ import { useMarketData } from "@/hooks/useMarketData";
 
 import BottomNav from "@/components/layout/BottomNav";
 import Ticker from "@/components/layout/Ticker";
+import SuperAgent from "@/components/superagent/SuperAgent";
 
 export default function HomePage() {
   const { vault, bots, deployBot, toggleBot } = useTradeCore();
   const { markets, updatedAt, loading, error } = useMarketData();
 
   const [feed, setFeed] = useState([
-    "TradeCore live market engine initialized.",
-    "Awaiting real-time asset velocity.",
+    "TradeCore demo engine initialized.",
+    "Super Agent paper trading mode armed.",
   ]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (markets.length === 0) return;
 
-      const asset =
-        markets[Math.floor(Math.random() * markets.length)];
-
-      const direction =
-        asset.change24h >= 0
-          ? "bullish continuation"
-          : "bearish pressure";
+      const asset = markets[Math.floor(Math.random() * markets.length)];
+      const direction = asset.change24h >= 0 ? "bullish continuation" : "bearish pressure";
 
       setFeed((prev) => [
-        `${asset.symbol} detected ${direction} at $${asset.price.toLocaleString()}`,
+        `${asset.symbol} live scan: ${direction} at $${asset.price.toLocaleString()}`,
         ...prev.slice(0, 5),
       ]);
     }, 3500);
@@ -37,35 +33,18 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [markets]);
 
-  const activeBots = useMemo(
-    () => bots.filter((bot) => bot.active).length,
-    [bots]
-  );
-
-  const totalTrades = useMemo(() => {
-    return bots.reduce((acc, bot) => acc + bot.trades, 0);
-  }, [bots]);
+  const activeBots = bots.filter((bot) => bot.active).length;
+  const totalTrades = bots.reduce((acc, bot) => acc + bot.trades, 0);
 
   const topBot = useMemo(() => {
     return [...bots].sort((a, b) => b.pl - a.pl)[0];
   }, [bots]);
 
-  const strongestMarket = useMemo(() => {
-    if (markets.length === 0) return null;
-    return [...markets].sort((a, b) => b.change24h - a.change24h)[0];
-  }, [markets]);
-
-  const weakestMarket = useMemo(() => {
-    if (markets.length === 0) return null;
-    return [...markets].sort((a, b) => a.change24h - b.change24h)[0];
-  }, [markets]);
-
   const marketBias = useMemo(() => {
     if (markets.length === 0) return "SCANNING";
 
     const average =
-      markets.reduce((acc, asset) => acc + asset.change24h, 0) /
-      markets.length;
+      markets.reduce((acc, asset) => acc + asset.change24h, 0) / markets.length;
 
     if (average > 2) return "BULLISH";
     if (average < -2) return "BEARISH";
@@ -79,7 +58,7 @@ export default function HomePage() {
       <div className="mx-auto max-w-7xl px-5 pt-24">
         <section className="mb-8">
           <p className="mb-4 text-xs tracking-[0.45em] text-blue-300">
-            LIVE MARKET CORE ONLINE
+            DEMO RUN ONLINE
           </p>
 
           <h1 className="text-5xl font-black leading-[0.9] tracking-tight md:text-7xl">
@@ -89,7 +68,7 @@ export default function HomePage() {
           </h1>
 
           <p className="muted mt-6 max-w-xl text-lg leading-relaxed">
-            Autonomous Multi-Agent Crypto Trading Infrastructure
+            Live-data paper trading command center.
           </p>
 
           <p className="muted mt-3 text-xs">
@@ -110,14 +89,14 @@ export default function HomePage() {
           <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <h2 className="text-4xl font-black leading-tight md:text-5xl">
-                Live Market Intelligence
+                Super Agent Demo Run
                 <br />
-                Connected
+                Activated
               </h2>
 
               <p className="muted mt-6 text-lg leading-relaxed">
-                TradeCore is now reading live crypto prices, 24h movement,
-                highs, lows, volume and market momentum.
+                Omega Market Intelligence reads live prices, evaluates momentum,
+                generates paper trades and updates bot performance in demo mode.
               </p>
             </div>
 
@@ -129,45 +108,56 @@ export default function HomePage() {
                 Deploy Agent
               </button>
 
-              <button className="secondary-button rounded-2xl px-6 py-4 text-base font-semibold">
-                Refresh Market Scan
+              <button
+                onClick={() => window.location.reload()}
+                className="secondary-button rounded-2xl px-6 py-4 text-base font-semibold"
+              >
+                Refresh Market Core
               </button>
             </div>
           </div>
         </section>
 
-        <section className="mb-8 grid gap-4 md:grid-cols-2">
-          <div className="panel p-6">
-            <p className="muted text-sm">Strongest 24h Asset</p>
-            <h3 className="mt-3 text-4xl font-black">
-              {strongestMarket ? strongestMarket.symbol : "SCANNING"}
-            </h3>
-            <p className="mt-3 text-3xl font-black text-green-400">
-              {strongestMarket
-                ? `${strongestMarket.change24h >= 0 ? "+" : ""}${strongestMarket.change24h.toFixed(2)}%`
-                : "--"}
-            </p>
+        <section className="mb-8 grid gap-6 xl:grid-cols-3">
+          <div className="xl:col-span-2">
+            <SuperAgent />
           </div>
 
-          <div className="panel p-6">
-            <p className="muted text-sm">Weakest 24h Asset</p>
-            <h3 className="mt-3 text-4xl font-black">
-              {weakestMarket ? weakestMarket.symbol : "SCANNING"}
-            </h3>
-            <p className="mt-3 text-3xl font-black text-red-400">
-              {weakestMarket
-                ? `${weakestMarket.change24h >= 0 ? "+" : ""}${weakestMarket.change24h.toFixed(2)}%`
-                : "--"}
-            </p>
+          <div className="space-y-6">
+            <div className="panel soft-glow p-6">
+              <h3 className="text-xl font-bold">Top Performing Bot</h3>
+              <h2 className="mt-5 text-4xl font-black">{topBot.name}</h2>
+              <div className="green mt-5 text-5xl font-black">
+                +{topBot.pl}%
+              </div>
+              <div className="muted mt-5 space-y-2 text-sm">
+                <p>Trades: {topBot.trades.toLocaleString()}</p>
+                <p>Boost Level: {topBot.boost}</p>
+                <p>Confidence: HIGH</p>
+              </div>
+            </div>
+
+            <div className="panel p-6">
+              <h3 className="mb-5 text-xl font-bold">Live Trade Feed</h3>
+
+              <div className="space-y-3">
+                {feed.map((item, index) => (
+                  <div
+                    key={index}
+                    className="sub-panel px-4 py-4 text-sm text-zinc-300"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
         <section className="grid gap-6 xl:grid-cols-3">
           <div className="space-y-6 xl:col-span-2">
             <div className="panel p-6">
-              <h3 className="mb-5 text-xl font-bold">
-                Live Market Board
-              </h3>
+              <h3 className="mb-5 text-xl font-bold">Live Market Board</h3>
 
               <div className="space-y-3">
                 {markets.map((asset) => (
@@ -183,8 +173,7 @@ export default function HomePage() {
                     <div className="text-right">
                       <p className="font-bold">
                         ${asset.price.toLocaleString(undefined, {
-                          maximumFractionDigits:
-                            asset.price > 100 ? 0 : 4,
+                          maximumFractionDigits: asset.price > 100 ? 0 : 4,
                         })}
                       </p>
 
@@ -242,68 +231,26 @@ export default function HomePage() {
                     />
 
                     <MiniCard
-                      title="24h"
-                      value={
-                        linkedMarket
-                          ? `${linkedMarket.change24h >= 0 ? "+" : ""}${linkedMarket.change24h.toFixed(2)}%`
-                          : "--"
-                      }
-                      green={linkedMarket ? linkedMarket.change24h >= 0 : false}
+                      title="P/L"
+                      value={`${bot.pl >= 0 ? "+" : ""}${bot.pl}%`}
+                      green={bot.pl >= 0}
                     />
 
                     <MiniCard title="Trades" value={bot.trades.toLocaleString()} />
                     <MiniCard title="Capital" value={`$${bot.capital}`} />
                   </div>
 
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => toggleBot(bot.name)}
-                      className={`rounded-2xl px-5 py-3 text-sm font-semibold ${
-                        bot.active ? "primary-button" : "secondary-button"
-                      }`}
-                    >
-                      {bot.active ? "Active" : "Paused"}
-                    </button>
-
-                    <button className="secondary-button rounded-2xl px-5 py-3 text-sm font-semibold">
-                      Live Analytics
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => toggleBot(bot.name)}
+                    className={`rounded-2xl px-5 py-3 text-sm font-semibold ${
+                      bot.active ? "primary-button" : "secondary-button"
+                    }`}
+                  >
+                    {bot.active ? "Active" : "Paused"}
+                  </button>
                 </div>
               );
             })}
-          </div>
-
-          <div className="space-y-6">
-            <div className="panel soft-glow p-6">
-              <h3 className="text-xl font-bold">Top Performing Bot</h3>
-              <h2 className="mt-5 text-4xl font-black">{topBot.name}</h2>
-              <div className="green mt-5 text-5xl font-black">
-                +{topBot.pl}%
-              </div>
-              <div className="muted mt-5 space-y-2 text-sm">
-                <p>Trades: {topBot.trades.toLocaleString()}</p>
-                <p>Boost Level: {topBot.boost}</p>
-                <p>Confidence: HIGH</p>
-              </div>
-            </div>
-
-            <div className="panel p-6">
-              <h3 className="mb-5 text-xl font-bold">
-                Live Trade Feed
-              </h3>
-
-              <div className="space-y-3">
-                {feed.map((item, index) => (
-                  <div
-                    key={index}
-                    className="sub-panel px-4 py-4 text-sm text-zinc-300"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </section>
       </div>
