@@ -1,299 +1,244 @@
-"use client";
+"use client"
 
-import { useEffect, useMemo, useState } from "react";
-import { useTradeCore } from "@/context/TradeCoreContext";
-import { useMarketData } from "@/hooks/useMarketData";
-
-import BottomNav from "@/components/layout/BottomNav";
-import Ticker from "@/components/layout/Ticker";
-import SuperAgent from "@/components/superagent/SuperAgent";
+import { useEffect, useState } from "react"
+import AISignalPanel from "@/components/dashboard/AISignalPanel"
 
 export default function HomePage() {
-  const { vault, bots, deployBot, toggleBot } = useTradeCore();
-  const { markets, updatedAt, loading, error } = useMarketData();
+  const [markets, setMarkets] = useState<any[]>([])
 
-  const [feed, setFeed] = useState([
-    "TradeCore demo engine initialized.",
-    "Super Agent paper trading mode armed.",
-  ]);
+  async function loadMarkets() {
+    try {
+      const res = await fetch("/api/market")
+
+      const data = await res.json()
+
+      setMarkets(data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (markets.length === 0) return;
+    loadMarkets()
 
-      const asset = markets[Math.floor(Math.random() * markets.length)];
-      const direction = asset.change24h >= 0 ? "bullish continuation" : "bearish pressure";
+    const interval = setInterval(loadMarkets, 10000)
 
-      setFeed((prev) => [
-        `${asset.symbol} live scan: ${direction} at $${asset.price.toLocaleString()}`,
-        ...prev.slice(0, 5),
-      ]);
-    }, 3500);
-
-    return () => clearInterval(interval);
-  }, [markets]);
-
-  const activeBots = bots.filter((bot) => bot.active).length;
-  const totalTrades = bots.reduce((acc, bot) => acc + bot.trades, 0);
-
-  const topBot = useMemo(() => {
-    return [...bots].sort((a, b) => b.pl - a.pl)[0];
-  }, [bots]);
-
-  const marketBias = useMemo(() => {
-    if (markets.length === 0) return "SCANNING";
-
-    const average =
-      markets.reduce((acc, asset) => acc + asset.change24h, 0) / markets.length;
-
-    if (average > 2) return "BULLISH";
-    if (average < -2) return "BEARISH";
-    return "NEUTRAL";
-  }, [markets]);
+    return () => clearInterval(interval)
+  }, [])
 
   return (
-    <main className="min-h-screen pb-32">
-      <Ticker />
+    <main className="min-h-screen bg-black text-white">
+      {/* TOP MARKET BAR */}
 
-      <div className="mx-auto max-w-7xl px-5 pt-24">
-        <section className="mb-8">
-          <p className="mb-4 text-xs tracking-[0.45em] text-blue-300">
-            DEMO RUN ONLINE
+      <div className="border-b border-blue-500/10 bg-[#050816]">
+        <div className="flex gap-8 overflow-x-auto whitespace-nowrap px-6 py-4 text-sm">
+          {markets.map((coin, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2"
+            >
+              <span className="font-semibold">
+                {coin.symbol}
+              </span>
+
+              <span>
+                $
+                {coin.price?.toLocaleString()}
+              </span>
+
+              <span
+                className={
+                  coin.change >= 0
+                    ? "text-green-400"
+                    : "text-red-400"
+                }
+              >
+                {coin.change?.toFixed(2)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* HERO */}
+
+      <section className="px-6 pt-10">
+        <div className="rounded-[32px] border border-blue-500/10 bg-[#071120] p-8 shadow-[0_0_80px_rgba(0,100,255,0.12)]">
+          <p className="mb-4 text-sm tracking-[0.4em] text-blue-300">
+            TRADECORE ONLINE
           </p>
 
-          <h1 className="text-5xl font-black leading-[0.9] tracking-tight md:text-7xl">
-            Voltara
+          <h1 className="max-w-xl text-6xl font-black leading-none">
+            VOLTARA
             <br />
-            Trading
+            TRADING
           </h1>
 
-          <p className="muted mt-6 max-w-xl text-lg leading-relaxed">
-            Live-data paper trading command center.
+          <p className="mt-6 max-w-2xl text-lg text-gray-400">
+            Autonomous Multi-Agent Crypto Trading
+            Infrastructure powered by AI reasoning,
+            live market feeds and wallet intelligence.
           </p>
 
-          <p className="muted mt-3 text-xs">
-            {loading
-              ? "Loading real market data..."
-              : error || `Live feed synced: ${updatedAt ? new Date(updatedAt).toLocaleTimeString() : "online"}`}
-          </p>
-        </section>
+          <div className="mt-10 grid grid-cols-2 gap-4">
+            <div className="rounded-3xl border border-blue-500/10 bg-[#101827] p-6">
+              <p className="text-sm text-gray-400">
+                Founder Vault
+              </p>
 
-        <section className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard title="Founder Vault" value={`$${vault.toLocaleString()}`} />
-          <StatCard title="Trades Today" value={totalTrades.toLocaleString()} />
-          <StatCard title="Active Bots" value={`${activeBots}/10`} />
-          <StatCard title="Market Bias" value={marketBias} small />
-        </section>
-
-        <section className="panel soft-glow mb-8 overflow-hidden p-8">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <h2 className="text-4xl font-black leading-tight md:text-5xl">
-                Super Agent Demo Run
-                <br />
-                Activated
-              </h2>
-
-              <p className="muted mt-6 text-lg leading-relaxed">
-                Omega Market Intelligence reads live prices, evaluates momentum,
-                generates paper trades and updates bot performance in demo mode.
+              <p className="mt-3 text-4xl font-bold">
+                $48,221
               </p>
             </div>
 
-            <div className="flex w-full flex-col gap-3 lg:w-[320px]">
-              <button
-                onClick={deployBot}
-                className="primary-button rounded-2xl px-6 py-4 text-base font-semibold"
-              >
-                Deploy Agent
-              </button>
+            <div className="rounded-3xl border border-blue-500/10 bg-[#101827] p-6">
+              <p className="text-sm text-gray-400">
+                Daily P/L
+              </p>
 
-              <button
-                onClick={() => window.location.reload()}
-                className="secondary-button rounded-2xl px-6 py-4 text-base font-semibold"
-              >
-                Refresh Market Core
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section className="mb-8 grid gap-6 xl:grid-cols-3">
-          <div className="xl:col-span-2">
-            <SuperAgent />
-          </div>
-
-          <div className="space-y-6">
-            <div className="panel soft-glow p-6">
-              <h3 className="text-xl font-bold">Top Performing Bot</h3>
-              <h2 className="mt-5 text-4xl font-black">{topBot.name}</h2>
-              <div className="green mt-5 text-5xl font-black">
-                +{topBot.pl}%
-              </div>
-              <div className="muted mt-5 space-y-2 text-sm">
-                <p>Trades: {topBot.trades.toLocaleString()}</p>
-                <p>Boost Level: {topBot.boost}</p>
-                <p>Confidence: HIGH</p>
-              </div>
+              <p className="mt-3 text-4xl font-bold text-green-400">
+                +$4,281
+              </p>
             </div>
 
-            <div className="panel p-6">
-              <h3 className="mb-5 text-xl font-bold">Live Trade Feed</h3>
+            <div className="rounded-3xl border border-blue-500/10 bg-[#101827] p-6">
+              <p className="text-sm text-gray-400">
+                Trades Today
+              </p>
 
-              <div className="space-y-3">
-                {feed.map((item, index) => (
-                  <div
-                    key={index}
-                    className="sub-panel px-4 py-4 text-sm text-zinc-300"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-6 xl:grid-cols-3">
-          <div className="space-y-6 xl:col-span-2">
-            <div className="panel p-6">
-              <h3 className="mb-5 text-xl font-bold">Live Market Board</h3>
-
-              <div className="space-y-3">
-                {markets.map((asset) => (
-                  <div
-                    key={asset.symbol}
-                    className="sub-panel flex items-center justify-between p-4"
-                  >
-                    <div>
-                      <p className="font-bold">{asset.symbol}</p>
-                      <p className="muted text-xs">{asset.name}</p>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="font-bold">
-                        ${asset.price.toLocaleString(undefined, {
-                          maximumFractionDigits: asset.price > 100 ? 0 : 4,
-                        })}
-                      </p>
-
-                      <p
-                        className={
-                          asset.change24h >= 0
-                            ? "text-sm text-green-400"
-                            : "text-sm text-red-400"
-                        }
-                      >
-                        {asset.change24h >= 0 ? "+" : ""}
-                        {asset.change24h.toFixed(2)}%
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="mt-3 text-4xl font-bold">
+                8,421
+              </p>
             </div>
 
-            {bots.map((bot) => {
-              const linkedMarket = markets.find(
-                (asset) => asset.symbol === bot.symbol
-              );
+            <div className="rounded-3xl border border-blue-500/10 bg-[#101827] p-6">
+              <p className="text-sm text-gray-400">
+                Active Bots
+              </p>
 
-              return (
-                <div key={bot.name} className="panel p-6">
-                  <div className="mb-6 flex items-start justify-between">
-                    <div>
-                      <h3 className="text-3xl font-black">{bot.name}</h3>
-                      <p className="muted mt-2 text-sm">
-                        {bot.symbol} Autonomous Agent
-                      </p>
-                    </div>
-
-                    <div
-                      className={`h-3 w-3 rounded-full ${
-                        bot.active
-                          ? "animate-pulse-soft bg-green-400"
-                          : "bg-red-400"
-                      }`}
-                    />
-                  </div>
-
-                  <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <MiniCard
-                      title="Live Price"
-                      value={
-                        linkedMarket
-                          ? `$${linkedMarket.price.toLocaleString(undefined, {
-                              maximumFractionDigits:
-                                linkedMarket.price > 100 ? 0 : 4,
-                            })}`
-                          : "--"
-                      }
-                    />
-
-                    <MiniCard
-                      title="P/L"
-                      value={`${bot.pl >= 0 ? "+" : ""}${bot.pl}%`}
-                      green={bot.pl >= 0}
-                    />
-
-                    <MiniCard title="Trades" value={bot.trades.toLocaleString()} />
-                    <MiniCard title="Capital" value={`$${bot.capital}`} />
-                  </div>
-
-                  <button
-                    onClick={() => toggleBot(bot.name)}
-                    className={`rounded-2xl px-5 py-3 text-sm font-semibold ${
-                      bot.active ? "primary-button" : "secondary-button"
-                    }`}
-                  >
-                    {bot.active ? "Active" : "Paused"}
-                  </button>
-                </div>
-              );
-            })}
+              <p className="mt-3 text-4xl font-bold">
+                6/10
+              </p>
+            </div>
           </div>
-        </section>
+        </div>
+      </section>
+
+      {/* AI SECTION */}
+
+      <section className="space-y-8 px-6 py-10">
+        <div className="rounded-[32px] border border-blue-500/10 bg-[#071120] p-8">
+          <h2 className="mb-6 text-4xl font-bold">
+            AI System Status
+          </h2>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-2xl bg-[#121a2b] p-5">
+              <span className="text-gray-400">
+                Market Sentiment
+              </span>
+
+              <span className="font-bold text-green-400">
+                BULLISH
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between rounded-2xl bg-[#121a2b] p-5">
+              <span className="text-gray-400">
+                AI Network
+              </span>
+
+              <span className="font-bold text-green-400">
+                STABLE
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between rounded-2xl bg-[#121a2b] p-5">
+              <span className="text-gray-400">
+                Treasury Engine
+              </span>
+
+              <span className="font-bold text-green-400">
+                ACTIVE
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* AI SIGNALS */}
+
+        <AISignalPanel />
+
+        {/* CONSOLE */}
+
+        <div className="rounded-[32px] border border-blue-500/10 bg-[#071120] p-8">
+          <h2 className="mb-6 text-4xl font-bold">
+            AI Command Console
+          </h2>
+
+          <div className="rounded-3xl bg-black p-6 font-mono text-green-400">
+            <div className="space-y-4">
+              <p>
+                &gt; ETH REAPER confidence:
+                HIGH
+              </p>
+
+              <p>
+                &gt; BTC TITAN trend lock
+                confirmed.
+              </p>
+
+              <p>
+                &gt; Scanning multi-agent
+                market grid...
+              </p>
+
+              <p>
+                &gt; Treasury engine
+                synchronized.
+              </p>
+
+              <p>
+                &gt; TradeCore kernel online.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+
+      <footer className="px-6 pb-32 pt-10 text-center">
+        <p className="text-2xl font-bold">
+          Voltara Trading
+        </p>
+
+        <p className="mt-2 text-gray-500">
+          Powered by TradeCore
+        </p>
+      </footer>
+
+      {/* BOTTOM NAV */}
+
+      <div className="fixed bottom-0 left-0 right-0 border-t border-blue-500/10 bg-black/90 backdrop-blur-xl">
+        <div className="flex items-center justify-around py-5">
+          <button className="text-white">
+            Dashboard
+          </button>
+
+          <button className="text-gray-500">
+            Bots
+          </button>
+
+          <button className="text-gray-500">
+            Vault
+          </button>
+
+          <button className="text-gray-500">
+            Analytics
+          </button>
+        </div>
       </div>
-
-      <BottomNav />
     </main>
-  );
-}
-
-function StatCard({
-  title,
-  value,
-  small,
-}: {
-  title: string;
-  value: string;
-  small?: boolean;
-}) {
-  return (
-    <div className="panel p-5">
-      <p className="muted text-sm">{title}</p>
-      <h2 className={`mt-3 font-black ${small ? "text-2xl" : "text-4xl"}`}>
-        {value}
-      </h2>
-    </div>
-  );
-}
-
-function MiniCard({
-  title,
-  value,
-  green,
-}: {
-  title: string;
-  value: string;
-  green?: boolean;
-}) {
-  return (
-    <div className="sub-panel p-4">
-      <p className="muted text-xs">{title}</p>
-      <h4 className={`mt-2 text-2xl font-black ${green ? "text-green-400" : ""}`}>
-        {value}
-      </h4>
-    </div>
-  );
+  )
 }
