@@ -176,3 +176,8 @@ body {
 
   border-radius: 999px;
 }
+
+body {
+  background: black;
+  color: white;
+}
