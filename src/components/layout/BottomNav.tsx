@@ -4,18 +4,30 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const items = [
-  { label: "Dashboard", href: "/" },
-  { label: "Bots", href: "/bots" },
-  { label: "Vault", href: "/vault" },
-  { label: "Analytics", href: "/analytics" },
+  {
+    label: "Dashboard",
+    href: "/",
+  },
+  {
+    label: "Bots",
+    href: "/bots",
+  },
+  {
+    label: "Vault",
+    href: "/vault",
+  },
+  {
+    label: "Analytics",
+    href: "/analytics",
+  },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 z-50 w-full border-t border-[#13203f] bg-black/95 backdrop-blur-xl">
-      <div className="grid grid-cols-4 py-4">
+    <nav className="nav-blur fixed bottom-0 left-0 z-50 w-full">
+      <div className="mx-auto grid max-w-2xl grid-cols-4 py-4">
         {items.map((item) => {
           const active = pathname === item.href;
 
@@ -23,11 +35,25 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`text-center text-sm font-bold ${
-                active ? "text-blue-400" : "text-zinc-500"
-              }`}
+              className="flex flex-col items-center justify-center"
             >
-              {item.label}
+              <span
+                className={`text-sm font-semibold transition-all ${
+                  active
+                    ? "text-white"
+                    : "text-zinc-500"
+                }`}
+              >
+                {item.label}
+              </span>
+
+              <div
+                className={`mt-2 h-[3px] rounded-full transition-all ${
+                  active
+                    ? "w-8 bg-blue-400"
+                    : "w-0 bg-transparent"
+                }`}
+              />
             </Link>
           );
         })}
