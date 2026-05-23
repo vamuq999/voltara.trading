@@ -13,8 +13,12 @@ export default function VaultPage() {
   const { vault, bots } = useTradeCore();
   const { address, isConnected, chain } = useAccount();
 
-  const { data: balance } = useBalance({
+  const { data: balance, isLoading } = useBalance({
     address,
+    query: {
+      enabled: Boolean(address),
+      refetchInterval: 15000,
+    },
   });
 
   const [walletOpen, setWalletOpen] = useState(false);
@@ -48,11 +52,11 @@ export default function VaultPage() {
         <h1 className="text-5xl font-black md:text-7xl">Founder Vault</h1>
 
         <p className="muted mt-5 text-lg">
-          Treasury management and capital allocation layer.
+          Secure read-only wallet authentication and treasury monitoring.
         </p>
 
         <section className="mt-10 grid grid-cols-1 gap-4">
-          <VaultCard title="Founder Vault Balance" value={`$${vault.toLocaleString()}`} />
+          <VaultCard title="Demo Vault Balance" value={`$${vault.toLocaleString()}`} />
           <VaultCard title="Allocated To Bots" value={`$${allocated.toLocaleString()}`} />
           <VaultCard title="Available Reserve" value={`$${(vault - allocated).toLocaleString()}`} />
         </section>
@@ -62,7 +66,7 @@ export default function VaultPage() {
             <div>
               <h2 className="text-2xl font-bold">Wallet Access</h2>
               <p className="muted mt-2 text-sm">
-                Real wallet authentication via wagmi.
+                No trading permissions. No token approvals. No seed phrases.
               </p>
             </div>
 
@@ -74,35 +78,21 @@ export default function VaultPage() {
           </div>
 
           <div className="mb-4 grid gap-3">
-            <div className="sub-panel p-4">
-              <p className="muted text-xs">Status</p>
-              <p className="mt-2 font-bold">
-                {isConnected ? "Connected" : "Disconnected"}
-              </p>
-            </div>
-
-            <div className="sub-panel p-4">
-              <p className="muted text-xs">Address</p>
-              <p className="mt-2 font-bold">{shortAddress}</p>
-            </div>
-
-            <div className="sub-panel p-4">
-              <p className="muted text-xs">Network</p>
-              <p className="mt-2 font-bold">
-                {chain?.name ?? "No network detected"}
-              </p>
-            </div>
-
-            <div className="sub-panel p-4">
-              <p className="muted text-xs">Native Balance</p>
-              <p className="mt-2 font-bold">
-                {balance
-                  ? `${Number(balance.formatted).toFixed(5)} ${balance.symbol}`
-                  : isConnected
-                  ? "Loading..."
-                  : "Connect wallet to view"}
-              </p>
-            </div>
+            <Info title="Status" value={isConnected ? "Connected" : "Disconnected"} />
+            <Info title="Address" value={shortAddress} />
+            <Info title="Network" value={chain?.name ?? "No network detected"} />
+            <Info
+              title="Native Balance"
+              value={
+                isConnected
+                  ? isLoading
+                    ? "Loading..."
+                    : balance
+                    ? `${Number(balance.formatted).toFixed(6)} ${balance.symbol}`
+                    : "Unavailable"
+                  : "Connect wallet to view"
+              }
+            />
           </div>
 
           <button
@@ -114,20 +104,14 @@ export default function VaultPage() {
         </section>
 
         <section className="panel mt-8 p-6">
-          <h2 className="mb-5 text-2xl font-bold">Treasury Activity</h2>
+          <h2 className="mb-5 text-2xl font-bold">Security Rules</h2>
 
           <div className="space-y-3">
-            <div className="sub-panel p-4 text-sm">
-              Wallet authentication layer active.
-            </div>
-
-            <div className="sub-panel p-4 text-sm">
-              Founder Vault awaiting real treasury sync.
-            </div>
-
-            <div className="sub-panel p-4 text-sm">
-              Profit withdrawal route prepared for future exchange layer.
-            </div>
+            <Rule text="Never enter a seed phrase into this app." />
+            <Rule text="Wallet connection is read-only at this stage." />
+            <Rule text="No token approvals are requested." />
+            <Rule text="No automatic withdrawals are enabled." />
+            <Rule text="Real trading must use a separate small test wallet first." />
           </div>
         </section>
       </div>
@@ -142,6 +126,23 @@ function VaultCard({ title, value }: { title: string; value: string }) {
     <div className="panel p-6">
       <p className="muted text-sm">{title}</p>
       <h2 className="mt-3 text-5xl font-black">{value}</h2>
+    </div>
+  );
+}
+
+function Info({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="sub-panel p-4">
+      <p className="muted text-xs">{title}</p>
+      <p className="mt-2 break-all font-bold">{value}</p>
+    </div>
+  );
+}
+
+function Rule({ text }: { text: string }) {
+  return (
+    <div className="sub-panel p-4 text-sm text-zinc-300">
+      {text}
     </div>
   );
 }
