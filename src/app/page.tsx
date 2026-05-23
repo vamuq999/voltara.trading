@@ -1,375 +1,501 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import BotCard from "@/components/cards/BotCard";
+import { useEffect, useState } from "react";
+import NeuralBackground from "@/components/effects/NeuralBackground";
 
-type BotStatus = "active" | "paused" | "boosted";
-
-type Bot = {
-  name: string;
-  symbol: string;
-  pnl: number;
-  trades: number;
-  boost: number;
-  status: BotStatus;
-  allocation: number;
-};
-
-const initialBots: Bot[] = [
-  { name: "BTC TITAN", symbol: "BTC", pnl: 18.4, trades: 1284, boost: 6, status: "active", allocation: 100 },
-  { name: "ETH REAPER", symbol: "ETH", pnl: 24.2, trades: 2241, boost: 9, status: "boosted", allocation: 150 },
-  { name: "SOL RUNNER", symbol: "SOL", pnl: 12.1, trades: 842, boost: 4, status: "active", allocation: 75 },
-  { name: "DOGE CHAOS", symbol: "DOGE", pnl: -2.4, trades: 381, boost: 1, status: "paused", allocation: 25 },
-  { name: "XRP SENTINEL", symbol: "XRP", pnl: 7.8, trades: 654, boost: 3, status: "active", allocation: 50 },
-  { name: "ADA ORACLE", symbol: "ADA", pnl: 4.3, trades: 489, boost: 2, status: "paused", allocation: 40 },
-  { name: "AVAX HUNTER", symbol: "AVAX", pnl: 9.6, trades: 731, boost: 4, status: "active", allocation: 60 },
-  { name: "LINK WATCHER", symbol: "LINK", pnl: 6.2, trades: 514, boost: 3, status: "active", allocation: 45 },
-];
-
-const ticker = [
-  "BTC +2.4%",
-  "ETH +5.1%",
-  "SOL +8.8%",
-  "DOGE -1.2%",
-  "XRP +3.4%",
-  "ADA +2.1%",
-  "AVAX +4.9%",
-  "LINK +3.7%",
-];
-
-const tradeMessages = [
-  "BTC TITAN bought BTC",
+const feedMessages = [
   "ETH REAPER exited ETH",
-  "SOL RUNNER detected breakout",
-  "DOGE CHAOS paused trading",
   "XRP SENTINEL confirmed support",
-  "ADA ORACLE scanned market state",
-  "AVAX HUNTER entered volatility zone",
-  "LINK WATCHER detected momentum spike",
+  "BTC TITAN bought BTC",
+  "SOL RUNNER detected breakout",
   "TradeCore boosted ETH REAPER",
-  "Founder Vault synced balances",
+  "LINK WATCHER detected momentum spike",
+  "DOGE CHAOS paused trading",
+  "ADA ORACLE detected reversal",
 ];
 
-const terminalLines = [
+const consoleMessages = [
   "TradeCore kernel online.",
   "Scanning multi-agent market grid...",
   "ETH REAPER confidence: HIGH.",
   "BTC TITAN trend lock confirmed.",
-  "Vault allocation stable.",
-  "Autonomous signal mesh synchronized.",
+  "Treasury engine synchronized.",
+  "Volatility layer adapting...",
+  "Quantum signal processing active.",
 ];
 
-const allocation = [
-  { label: "BTC", value: 38 },
-  { label: "ETH", value: 27 },
-  { label: "SOL", value: 18 },
-  { label: "XRP", value: 10 },
-  { label: "ADA", value: 7 },
+const bots = [
+  {
+    name: "BTC TITAN",
+    pair: "BTC Agent",
+    pl: "+18.4%",
+    trades: 1284,
+    boost: 6,
+    capital: "$120",
+    active: true,
+  },
+  {
+    name: "ETH REAPER",
+    pair: "ETH Agent",
+    pl: "+24.2%",
+    trades: 2241,
+    boost: 9,
+    capital: "$240",
+    active: true,
+  },
+  {
+    name: "SOL RUNNER",
+    pair: "SOL Agent",
+    pl: "+12.1%",
+    trades: 842,
+    boost: 4,
+    capital: "$75",
+    active: true,
+  },
+  {
+    name: "DOGE CHAOS",
+    pair: "DOGE Agent",
+    pl: "-2.4%",
+    trades: 381,
+    boost: 1,
+    capital: "$25",
+    active: false,
+  },
+  {
+    name: "XRP SENTINEL",
+    pair: "XRP Agent",
+    pl: "+7.8%",
+    trades: 654,
+    boost: 3,
+    capital: "$50",
+    active: true,
+  },
 ];
 
-export default function Home() {
-  const [bots, setBots] = useState(initialBots);
-  const [selectedBot, setSelectedBot] = useState<Bot | null>(null);
-  const [feed, setFeed] = useState(tradeMessages.slice(0, 5));
-  const [terminal, setTerminal] = useState(terminalLines.slice(0, 4));
+export default function HomePage() {
+  const [feed, setFeed] = useState(feedMessages);
+  const [consoleFeed, setConsoleFeed] = useState(consoleMessages);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      const msg = tradeMessages[Math.floor(Math.random() * tradeMessages.length)];
-      setFeed((prev) => [msg, ...prev].slice(0, 6));
-    }, 3000);
+    const interval = setInterval(() => {
+      const randomFeed =
+        feedMessages[Math.floor(Math.random() * feedMessages.length)];
 
-    const terminalTimer = setInterval(() => {
-      const msg = terminalLines[Math.floor(Math.random() * terminalLines.length)];
-      setTerminal((prev) => [`> ${msg}`, ...prev].slice(0, 5));
-    }, 4200);
+      setFeed((prev) => [randomFeed, ...prev.slice(0, 5)]);
+    }, 3200);
 
-    return () => {
-      clearInterval(timer);
-      clearInterval(terminalTimer);
-    };
+    return () => clearInterval(interval);
   }, []);
 
-  const activeBots = bots.filter((bot) => bot.status !== "paused").length;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const randomConsole =
+        consoleMessages[
+          Math.floor(Math.random() * consoleMessages.length)
+        ];
 
-  const topBot = useMemo(() => {
-    return [...bots].sort((a, b) => b.pnl - a.pnl)[0];
-  }, [bots]);
+      setConsoleFeed((prev) => [randomConsole, ...prev.slice(0, 4)]);
+    }, 2600);
 
-  function activateBot(botName: string) {
-    setBots((current) =>
-      current.map((bot) =>
-        bot.name === botName
-          ? {
-              ...bot,
-              status: bot.status === "boosted" ? "active" : "boosted",
-              boost: bot.status === "boosted" ? bot.boost : bot.boost + 1,
-              trades: bot.trades + 37,
-            }
-          : bot
-      )
-    );
-    setSelectedBot(null);
-  }
-
-  function pauseBot(botName: string) {
-    setBots((current) =>
-      current.map((bot) =>
-        bot.name === botName ? { ...bot, status: "paused" } : bot
-      )
-    );
-    setSelectedBot(null);
-  }
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <main className="min-h-screen bg-[#050816] text-white overflow-x-hidden pb-28">
-      <div className="sticky top-0 z-30 border-b border-white/10 bg-black/50 backdrop-blur-xl overflow-x-auto">
-        <div className="flex min-w-max gap-8 px-6 py-4 text-sm text-zinc-300">
-          {ticker.map((item) => (
-            <span key={item}>{item}</span>
-          ))}
+    <main className="relative min-h-screen overflow-hidden bg-[#020617] text-white">
+      <NeuralBackground />
+
+      {/* Ticker */}
+      <div className="sticky top-0 z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
+        <div className="ticker-track flex gap-12 whitespace-nowrap px-6 py-4 text-sm text-zinc-300">
+          <span>BTC +2.4%</span>
+          <span>ETH +5.1%</span>
+          <span>SOL +8.8%</span>
+          <span>DOGE -1.2%</span>
+          <span>XRP +3.4%</span>
+          <span>ADA +2.1%</span>
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-7xl px-5 py-8">
-        <section className="mb-10">
-          <p className="mb-3 text-sm uppercase tracking-[0.35em] text-blue-300">
-            TradeCore Online
+      <div className="relative z-10 mx-auto max-w-7xl px-5 pb-32 pt-8">
+        {/* HERO */}
+        <section className="mb-8">
+          <p className="mb-4 text-xs tracking-[0.5em] text-blue-300">
+            TRADECORE ONLINE
           </p>
 
-          <h1 className="text-5xl font-black leading-none tracking-tight md:text-7xl">
+          <h1 className="max-w-2xl text-5xl font-black leading-[0.95] tracking-tight">
             VOLTARA
             <br />
             TRADING
           </h1>
 
-          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-zinc-400">
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-zinc-400">
             Autonomous Multi-Agent Crypto Trading Infrastructure
           </p>
         </section>
 
-        <section className="mb-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <Stat title="Founder Vault" value="$48,221" />
-          <Stat title="Daily P/L" value="+$4,281" green />
-          <Stat title="Trades Today" value="8,421" />
-          <Stat title="Active Bots" value={`${activeBots}/10`} />
+        {/* STATS */}
+        <section className="mb-8 grid grid-cols-2 gap-4">
+          <StatCard title="Founder Vault" value="$48,221" />
+          <StatCard
+            title="Daily P/L"
+            value="+$4,281"
+            green
+          />
+          <StatCard title="Trades Today" value="8,421" />
+          <StatCard title="Active Bots" value="6/10" />
         </section>
 
-        <section className="mb-10 grid gap-6 xl:grid-cols-3">
-          <div className="glass glow rounded-3xl p-7 xl:col-span-2">
-            <h2 className="max-w-2xl text-4xl font-black leading-tight">
-              Trade Smarter With Autonomous Agents
-            </h2>
+        {/* HERO PANEL */}
+        <section className="glass glow mb-8 rounded-[32px] p-8">
+          <h2 className="max-w-md text-5xl font-black leading-tight">
+            Trade Smarter With Autonomous Agents
+          </h2>
 
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-zinc-400">
-              Deploy intelligent crypto trading bots, monitor live market activity,
-              manage treasury systems and evolve your AI trading infrastructure in real time.
-            </p>
+          <p className="mt-6 max-w-2xl text-xl leading-relaxed text-zinc-400">
+            Deploy intelligent crypto trading bots, monitor live market
+            activity, manage treasury systems and evolve your AI trading
+            infrastructure in real time.
+          </p>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              <button className="rounded-2xl bg-blue-600 px-7 py-4 font-bold transition hover:bg-blue-500">
-                Launch TradeCore
-              </button>
-              <button className="rounded-2xl bg-white/10 px-7 py-4 font-bold">
-                Deploy Agent
-              </button>
-              <button className="rounded-2xl bg-white/10 px-7 py-4 font-bold">
-                Vault Control
-              </button>
-            </div>
-          </div>
+          <div className="mt-10 space-y-4">
+            <button className="w-full rounded-2xl bg-blue-600 px-6 py-5 text-lg font-bold">
+              Launch TradeCore
+            </button>
 
-          <div className="glass glow rounded-3xl p-6">
-            <h2 className="mb-5 text-2xl font-bold">AI System Status</h2>
-            <div className="space-y-3 text-sm">
-              <Status label="Market Sentiment" value="BULLISH" />
-              <Status label="AI Network" value="STABLE" />
-              <Status label="Volatility Index" value="MEDIUM" />
-              <Status label="Treasury Engine" value="ACTIVE" />
-            </div>
+            <button className="glass w-full rounded-2xl px-6 py-5 text-lg font-semibold">
+              Deploy Agent
+            </button>
+
+            <button className="glass w-full rounded-2xl px-6 py-5 text-lg font-semibold">
+              Vault Control
+            </button>
           </div>
         </section>
 
-        <section className="mb-10 grid gap-6 xl:grid-cols-3">
-          <div className="glass glow rounded-3xl p-6 xl:col-span-2">
-            <h2 className="mb-6 text-2xl font-bold">Treasury Growth Curve</h2>
-            <div className="chart-shell">
-              <div className="chart-line" />
-              <div className="chart-dot dot-1" />
-              <div className="chart-dot dot-2" />
-              <div className="chart-dot dot-3" />
-              <div className="chart-dot dot-4" />
-              <div className="chart-dot dot-5" />
-            </div>
-          </div>
+        {/* AI STATUS */}
+        <section className="glass glow mb-8 rounded-[32px] p-8">
+          <h2 className="mb-6 text-4xl font-black">
+            AI System Status
+          </h2>
 
-          <div className="glass glow rounded-3xl p-6">
-            <h2 className="mb-6 text-2xl font-bold">Portfolio Allocation</h2>
+          <div className="space-y-4">
+            <StatusRow label="Market Sentiment" value="BULLISH" />
+            <StatusRow label="AI Network" value="STABLE" />
+            <StatusRow label="Volatility Index" value="MEDIUM" />
+            <StatusRow label="Treasury Engine" value="ACTIVE" />
+          </div>
+        </section>
+
+        {/* TREASURY GRAPH */}
+        <section className="glass glow mb-8 rounded-[32px] p-8">
+          <h2 className="mb-8 text-4xl font-black">
+            Treasury Growth Curve
+          </h2>
+
+          <div className="relative h-[300px] overflow-hidden rounded-[24px] bg-black/40">
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:60px_60px]" />
+
+            <svg
+              viewBox="0 0 500 250"
+              className="absolute inset-0 h-full w-full"
+            >
+              <path
+                d="M20 220 C120 200, 180 170, 260 150 S380 120, 480 40"
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="8"
+                strokeLinecap="round"
+              />
+            </svg>
+
+            <div className="absolute left-[12%] top-[60%] h-6 w-6 animate-pulse rounded-full bg-green-400 shadow-[0_0_30px_rgba(74,222,128,0.8)]" />
+
+            <div className="absolute left-[30%] top-[48%] h-6 w-6 animate-pulse rounded-full bg-green-400 shadow-[0_0_30px_rgba(74,222,128,0.8)]" />
+
+            <div className="absolute left-[48%] top-[36%] h-6 w-6 animate-pulse rounded-full bg-green-400 shadow-[0_0_30px_rgba(74,222,128,0.8)]" />
+
+            <div className="absolute left-[68%] top-[26%] h-6 w-6 animate-pulse rounded-full bg-green-400 shadow-[0_0_30px_rgba(74,222,128,0.8)]" />
+
+            <div className="absolute left-[85%] top-[16%] h-6 w-6 animate-pulse rounded-full bg-green-400 shadow-[0_0_30px_rgba(74,222,128,0.8)]" />
+          </div>
+        </section>
+
+        {/* BOTS */}
+        <section className="mb-8">
+          <h2 className="mb-6 text-4xl font-black">
+            Autonomous Agents
+          </h2>
+
+          <div className="space-y-6">
+            {bots.map((bot) => (
+              <BotCard key={bot.name} bot={bot} />
+            ))}
+          </div>
+        </section>
+
+        {/* VAULT */}
+        <section className="glass glow mb-8 rounded-[32px] p-8">
+          <h2 className="mb-8 text-4xl font-black">
+            Founder Vault
+          </h2>
+
+          <div className="space-y-4">
+            <VaultRow
+              title="Available Balance"
+              value="$31,884"
+            />
+
+            <VaultRow
+              title="Allocated To Bots"
+              value="$16,337"
+            />
+
+            <button className="glass w-full rounded-2xl px-6 py-5 text-lg font-bold">
+              Connect Coinbase Wallet
+            </button>
+          </div>
+        </section>
+
+        {/* CONSOLE */}
+        <section className="glass glow mb-8 rounded-[32px] p-8">
+          <h2 className="mb-6 text-4xl font-black">
+            AI Command Console
+          </h2>
+
+          <div className="overflow-hidden rounded-[24px] bg-black px-6 py-6 font-mono text-green-300">
             <div className="space-y-4">
-              {allocation.map((item) => (
-                <div key={item.label}>
-                  <div className="mb-2 flex justify-between text-sm">
-                    <span>{item.label}</span>
-                    <span className="text-zinc-400">{item.value}%</span>
-                  </div>
-                  <div className="h-3 rounded-full bg-white/10">
-                    <div className="h-3 rounded-full bg-blue-500" style={{ width: `${item.value}%` }} />
-                  </div>
-                </div>
+              {consoleFeed.map((line, index) => (
+                <p
+                  key={index}
+                  className="animate-fade"
+                >
+                  {">"} {line}
+                </p>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-3">
-          <div className="space-y-6 xl:col-span-2">
-            <div className="grid gap-6 md:grid-cols-2">
-              {bots.map((bot) => (
-                <BotCard key={bot.name} bot={bot} onOpen={() => setSelectedBot(bot)} />
-              ))}
-            </div>
+        {/* FEED */}
+        <section className="glass glow mb-8 rounded-[32px] p-8">
+          <h2 className="mb-6 text-4xl font-black">
+            Live Trade Feed
+          </h2>
+
+          <div className="space-y-4">
+            {feed.map((item, index) => (
+              <div
+                key={index}
+                className="rounded-2xl bg-white/[0.04] px-6 py-5 text-lg text-zinc-300"
+              >
+                {item}
+              </div>
+            ))}
           </div>
-
-          <aside className="space-y-6">
-            <div className="glass glow rounded-3xl p-6">
-              <h2 className="mb-6 text-2xl font-bold">Founder Vault</h2>
-
-              <div className="space-y-4">
-                <VaultBox title="Available Balance" value="$31,884" />
-                <VaultBox title="Allocated To Bots" value="$16,337" />
-                <button className="w-full rounded-2xl bg-white/10 py-4 font-bold">
-                  Connect Coinbase Wallet
-                </button>
-              </div>
-            </div>
-
-            <div className="glass glow rounded-3xl p-6">
-              <h2 className="mb-6 text-2xl font-bold">AI Command Console</h2>
-
-              <div className="rounded-2xl bg-black/40 p-4 font-mono text-xs text-green-300 min-h-48">
-                {terminal.map((line, index) => (
-                  <p key={`${line}-${index}`} className="mb-3">
-                    {line}
-                  </p>
-                ))}
-              </div>
-            </div>
-
-            <div className="glass glow rounded-3xl p-6">
-              <h2 className="mb-6 text-2xl font-bold">Live Trade Feed</h2>
-
-              <div className="space-y-3">
-                {feed.map((trade, index) => (
-                  <div key={`${trade}-${index}`} className="rounded-2xl bg-white/5 p-4 text-sm text-zinc-300">
-                    {trade}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="glass glow rounded-3xl p-6">
-              <h2 className="mb-6 text-2xl font-bold">Top Performing Bot</h2>
-
-              <div className="rounded-3xl border border-blue-500/20 bg-blue-600/10 p-6">
-                <h3 className="text-3xl font-black">{topBot.name}</h3>
-                <p className="mt-4 text-5xl font-black text-green-400">+{topBot.pnl}%</p>
-
-                <div className="mt-6 space-y-2 text-zinc-300">
-                  <p>Trades: {topBot.trades.toLocaleString()}</p>
-                  <p>Boost Level: {topBot.boost}</p>
-                  <p>Confidence: HIGH</p>
-                </div>
-              </div>
-            </div>
-          </aside>
         </section>
 
-        <footer className="mt-20 pb-10 text-center text-zinc-500">
-          <p className="text-lg font-semibold">Voltara Trading</p>
-          <p className="mt-1 text-sm">Powered by TradeCore</p>
-        </footer>
+        {/* TOP BOT */}
+        <section className="glass glow rounded-[32px] p-8">
+          <h2 className="mb-8 text-4xl font-black">
+            Top Performing Bot
+          </h2>
+
+          <div className="rounded-[28px] border border-blue-400/20 bg-blue-950/40 p-8">
+            <h3 className="text-5xl font-black">
+              ETH REAPER
+            </h3>
+
+            <div className="mt-6 text-7xl font-black text-green-400">
+              +24.2%
+            </div>
+
+            <div className="mt-8 space-y-4 text-2xl text-zinc-300">
+              <p>Trades: 2,241</p>
+              <p>Boost Level: 9</p>
+              <p>Confidence: HIGH</p>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-black/75 backdrop-blur-xl">
-        <div className="mx-auto grid max-w-xl grid-cols-4 text-center text-xs text-zinc-400">
-          <button className="py-4 text-blue-300">Dashboard</button>
-          <button className="py-4">Bots</button>
-          <button className="py-4">Vault</button>
-          <button className="py-4">Analytics</button>
+      {/* Bottom Nav */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-black/40 backdrop-blur-2xl">
+        <div className="mx-auto flex max-w-2xl items-center justify-around py-5 text-zinc-400">
+          <button className="text-blue-400">Dashboard</button>
+          <button>Bots</button>
+          <button>Vault</button>
+          <button>Analytics</button>
         </div>
       </nav>
-
-      {selectedBot && (
-        <div className="fixed inset-0 z-50 flex items-end bg-black/70 p-4 backdrop-blur-sm md:items-center md:justify-center">
-          <div className="glass glow w-full max-w-lg rounded-3xl p-6">
-            <div className="mb-6 flex items-start justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.3em] text-blue-300">Bot Control</p>
-                <h2 className="mt-2 text-3xl font-black">{selectedBot.name}</h2>
-              </div>
-
-              <button onClick={() => setSelectedBot(null)} className="rounded-full bg-white/10 px-4 py-2">
-                Close
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <VaultBox title="Allocated Capital" value={`$${selectedBot.allocation}`} />
-
-              <div className="grid grid-cols-2 gap-4">
-                <VaultBox title="P/L" value={`${selectedBot.pnl > 0 ? "+" : ""}${selectedBot.pnl}%`} />
-                <VaultBox title="Boost" value={`${selectedBot.boost}`} />
-              </div>
-
-              <div className="rounded-2xl bg-white/5 p-4">
-                <p className="text-sm text-zinc-400">Strategy Mode</p>
-                <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
-                  <button className="rounded-xl bg-white/10 py-3">Safe</button>
-                  <button className="rounded-xl bg-blue-600 py-3 font-bold">Balanced</button>
-                  <button className="rounded-xl bg-white/10 py-3">Aggro</button>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button onClick={() => activateBot(selectedBot.name)} className="rounded-2xl bg-blue-600 py-4 font-bold">
-                Boost / Activate
-              </button>
-
-              <button onClick={() => pauseBot(selectedBot.name)} className="rounded-2xl bg-red-500/80 py-4 font-bold">
-                Pause Bot
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
 
-function Stat({ title, value, green = false }: { title: string; value: string; green?: boolean }) {
+function StatCard({
+  title,
+  value,
+  green,
+}: {
+  title: string;
+  value: string;
+  green?: boolean;
+}) {
   return (
-    <div className="glass glow rounded-3xl p-5">
-      <p className="text-sm text-zinc-400">{title}</p>
-      <h2 className={`mt-3 text-3xl font-black ${green ? "text-green-400" : ""}`}>{value}</h2>
+    <div className="glass glow rounded-[28px] p-6">
+      <p className="text-zinc-400">{title}</p>
+
+      <h3
+        className={`mt-4 text-5xl font-black ${
+          green ? "text-green-400" : "text-white"
+        }`}
+      >
+        {value}
+      </h3>
     </div>
   );
 }
 
-function VaultBox({ title, value }: { title: string; value: string }) {
+function StatusRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
   return (
-    <div className="rounded-2xl bg-white/5 p-4">
-      <p className="text-sm text-zinc-400">{title}</p>
-      <p className="mt-2 text-3xl font-black">{value}</p>
+    <div className="glass flex items-center justify-between rounded-2xl px-6 py-5">
+      <span className="text-xl text-zinc-400">
+        {label}
+      </span>
+
+      <span className="text-2xl font-bold text-green-400">
+        {value}
+      </span>
     </div>
   );
 }
 
-function Status({ label, value }: { label: string; value: string }) {
+function VaultRow({
+  title,
+  value,
+}: {
+  title: string;
+  value: string;
+}) {
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-white/5 p-4">
-      <span className="text-zinc-400">{label}</span>
-      <span className="font-bold text-green-400">{value}</span>
+    <div className="glass rounded-2xl px-6 py-5">
+      <p className="text-lg text-zinc-400">{title}</p>
+
+      <h3 className="mt-3 text-5xl font-black">
+        {value}
+      </h3>
+    </div>
+  );
+}
+
+function BotCard({
+  bot,
+}: {
+  bot: {
+    name: string;
+    pair: string;
+    pl: string;
+    trades: number;
+    boost: number;
+    capital: string;
+    active: boolean;
+  };
+}) {
+  const positive = bot.pl.includes("+");
+
+  return (
+    <div className="glass glow rounded-[32px] p-8">
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h3 className="text-5xl font-black">
+            {bot.name}
+          </h3>
+
+          <p className="mt-2 text-xl text-zinc-500">
+            {bot.pair}
+          </p>
+        </div>
+
+        <div
+          className={`h-5 w-5 rounded-full ${
+            bot.active
+              ? "animate-profit bg-green-400"
+              : "bg-red-400"
+          }`}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <BotStat
+          title="P/L"
+          value={bot.pl}
+          green={positive}
+          red={!positive}
+        />
+
+        <BotStat
+          title="Trades"
+          value={String(bot.trades)}
+        />
+
+        <BotStat
+          title="Boost"
+          value={String(bot.boost)}
+        />
+
+        <BotStat
+          title="Capital"
+          value={bot.capital}
+        />
+      </div>
+
+      <button
+        className={`mt-8 w-full rounded-2xl px-6 py-5 text-lg font-black ${
+          bot.active
+            ? "bg-blue-600"
+            : "bg-zinc-700"
+        }`}
+      >
+        {bot.active
+          ? "ACTIVE TRADING"
+          : "PAUSED TRADING"}
+      </button>
+    </div>
+  );
+}
+
+function BotStat({
+  title,
+  value,
+  green,
+  red,
+}: {
+  title: string;
+  value: string;
+  green?: boolean;
+  red?: boolean;
+}) {
+  return (
+    <div className="glass rounded-2xl p-5">
+      <p className="text-zinc-500">{title}</p>
+
+      <h4
+        className={`mt-3 text-4xl font-black ${
+          green
+            ? "text-green-400"
+            : red
+            ? "text-red-400"
+            : "text-white"
+        }`}
+      >
+        {value}
+      </h4>
     </div>
   );
 }
