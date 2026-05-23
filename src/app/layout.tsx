@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 import BottomNav from "@/components/layout/BottomNav"
+import Providers from "@/components/providers/WagmiProvider"
 
 export const metadata: Metadata = {
   title: "Voltara Trading",
@@ -16,11 +17,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-black text-white">
-        <main className="min-h-screen pb-24">
-          {children}
-        </main>
+        <Providers>
+          <main className="min-h-screen pb-24">
+            {children}
+          </main>
 
-        <BottomNav />
+          <BottomNav />
+        </Providers>
       </body>
     </html>
   )
