@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { TradeCoreProvider } from "@/context/TradeCoreContext";
+import Web3Provider from "@/components/providers/Web3Provider";
 
 export const metadata: Metadata = {
   title: "Voltara Trading",
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <TradeCoreProvider>{children}</TradeCoreProvider>
+        <Web3Provider>
+          <TradeCoreProvider>{children}</TradeCoreProvider>
+        </Web3Provider>
       </body>
     </html>
   );
