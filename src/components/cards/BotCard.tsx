@@ -1,7 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
-
 interface BotCardProps {
   name: string;
   pnl: string;
@@ -18,10 +14,7 @@ export default function BotCard({
   active,
 }: BotCardProps) {
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      className="glass glow rounded-3xl p-5"
-    >
+    <div className="glass glow rounded-3xl p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">{name}</h2>
 
@@ -41,6 +34,6 @@ export default function BotCard({
       <button className="mt-5 w-full rounded-2xl bg-blue-600 py-3 font-semibold hover:bg-blue-500 transition-all">
         ACTIVE TRADING
       </button>
-    </motion.div>
+    </div>
   );
 }
