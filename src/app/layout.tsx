@@ -1,30 +1,27 @@
-import type { Metadata } from "next"
-import "./globals.css"
+import type { Metadata } from "next";
+import "./globals.css";
 
-import BottomNav from "@/components/layout/BottomNav"
-import Providers from "@/components/providers/WagmiProvider"
+import Providers from "@/components/providers/WagmiProvider";
+import BottomNav from "@/components/layout/BottomNav";
 
 export const metadata: Metadata = {
   title: "Voltara Trading",
-  description: "AI Multi-Agent Trading Infrastructure",
-}
+  description: "Real wallet + live market trading dashboard",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
-      <body className="bg-black text-white">
+      <body>
         <Providers>
-          <main className="min-h-screen pb-24">
-            {children}
-          </main>
-
+          {children}
           <BottomNav />
         </Providers>
       </body>
     </html>
-  )
+  );
 }
